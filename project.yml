@@ -11,8 +11,8 @@ targets:
       - AppIcon.icns
     settings:
       PRODUCT_NAME: TokenMenyu
-      PRODUCT_BUNDLE_IDENTIFIER: com.lodev09.claude-usage
-      MARKETING_VERSION: 1.3.4
+      PRODUCT_BUNDLE_IDENTIFIER: com.lodev09.tokenmenyu
+      MARKETING_VERSION: 1.4.0
       INFOPLIST_FILE: Info.plist
       CODE_SIGN_IDENTITY: "-"
       SWIFT_VERSION: "5.0"
