@@ -72,23 +72,13 @@ struct UsageView: View {
                 } label: {
                     Text(provider.rawValue)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(selected ? Color.white.opacity(0.92) : Color.primary.opacity(0.7))
+                        .foregroundStyle(selected ? Color.primary : Color.primary.opacity(0.6))
                         .frame(maxWidth: .infinity)
                         .frame(height: 32)
                         .background {
                             if selected {
                                 Capsule()
-                                    .fill(LinearGradient(
-                                        colors: dark
-                                            ? [Color(red: 0.25, green: 0.26, blue: 0.28), Color(red: 0.20, green: 0.21, blue: 0.23)]
-                                            : [Color(white: 0.24), Color(white: 0.17)],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ))
-                                    .overlay {
-                                        Capsule().strokeBorder(.white.opacity(dark ? 0.12 : 0.08), lineWidth: 1)
-                                    }
-                                    .shadow(color: .black.opacity(0.18), radius: 3, y: 1)
+                                    .fill(.quinary)
                                     .matchedGeometryEffect(id: "provider", in: providerSelection)
                             }
                         }
@@ -98,7 +88,7 @@ struct UsageView: View {
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .padding(3)
+        .padding(4)
         .background((dark ? Color(white: 0.10) : Color(nsColor: .windowBackgroundColor)).opacity(0.25), in: Capsule())
         .overlay {
             Capsule().strokeBorder(.primary.opacity(dark ? 0.06 : 0.1), lineWidth: 1)
@@ -111,7 +101,7 @@ struct UsageView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
                 Image(systemName: model.provider.symbol)
-                    .foregroundStyle(model.provider == .claude ? .orange : .primary)
+                    .foregroundStyle(model.provider.tint ?? .primary)
                 Text("\(model.provider.rawValue) Usage")
                     .font(.headline)
                 Spacer()

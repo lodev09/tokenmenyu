@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import SwiftUI
 
 struct LimitInfo: Identifiable {
     let id: String
@@ -41,6 +42,7 @@ enum UsageProvider: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var symbol: String { "sparkle" }
+    var tint: Color? { self == .claude ? .orange : nil }
 }
 
 private struct ProviderUsage {
