@@ -8,8 +8,8 @@ permissions:
   contents: write
 
 env:
-  APP: ClaudeUsage
-  APP_NAME: Claude Usage
+  APP: TokenMenyu
+  APP_NAME: TokenMenyu
   IDENTITY: ${{ secrets.APPLE_IDENTITY }}
   TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
@@ -40,7 +40,7 @@ jobs:
         run: |
           brew install xcodegen
           xcodegen
-          xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -configuration Release \
+          xcodebuild -project TokenMenyu.xcodeproj -scheme TokenMenyu -configuration Release \
             -derivedDataPath .build \
             ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
             MARKETING_VERSION=${GITHUB_REF_NAME#v} \
@@ -58,7 +58,7 @@ jobs:
           mkdir dist/dmg
           cp -R "dist/$APP_NAME.app" dist/dmg/
           create-dmg \
-            --volname "Claude Usage" \
+            --volname "TokenMenyu" \
             --volicon AppIcon.icns \
             --window-size 540 380 \
             --icon-size 128 \

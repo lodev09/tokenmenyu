@@ -29,18 +29,44 @@ struct ProfileInfo {
 
 struct UsageSnapshot {
     var limits: [LimitInfo] = []
+    var extraUsageTitle = "Extra usage"
     var extraUsage: String?
     var extraUsagePercent: Double?
     var fetchedAt: Date?
 }
 
+enum UsageProvider: String, CaseIterable, Identifiable {
+    case claude = "Claude"
+    case codex = "Codex"
+
+    var id: String { rawValue }
+    var symbol: String { "sparkle" }
+}
+
+private struct ProviderUsage {
+    var snapshot = UsageSnapshot()
+    var error: String?
+    var isLoading = false
+    var tier: String?
+    var profile: ProfileInfo?
+    var blockedUntil: Date?
+}
+
 @MainActor
 final class UsageModel: ObservableObject {
-    @Published var snapshot = UsageSnapshot()
-    @Published var error: String?
-    @Published var isLoading = false
-    @Published var tier: String?
-    @Published var profile: ProfileInfo?
+    @Published var provider: UsageProvider {
+        didSet { UserDefaults.standard.set(provider.rawValue, forKey: "usageProvider") }
+    }
+    @Published private var providers: [UsageProvider: ProviderUsage] = [
+        .claude: ProviderUsage(),
+        .codex: ProviderUsage()
+    ]
+
+    var snapshot: UsageSnapshot { providers[provider]!.snapshot }
+    var error: String? { providers[provider]!.error }
+    var isLoading: Bool { providers[provider]!.isLoading }
+    var profile: ProfileInfo? { providers[provider]!.profile }
+    var blockedUntil: Date? { providers[provider]!.blockedUntil }
     static let minRefreshInterval: TimeInterval = 90
 
     @Published var refreshInterval: TimeInterval {
@@ -53,19 +79,18 @@ final class UsageModel: ObservableObject {
     }
 
     var tierLabel: String? {
-        profile?.tierLabel ?? tier?.capitalized
+        profile?.tierLabel ?? providers[provider]!.tier?.capitalized
     }
 
-    var headline: String {
-        guard let session = snapshot.limits.first(where: { $0.kind == "session" }) else { return "–" }
+    func headline(for provider: UsageProvider) -> String {
+        guard let session = providers[provider]!.snapshot.limits.first(where: { $0.kind == "session" }) else { return "–" }
         return "\(Int(session.percent))%"
     }
-
-    @Published private(set) var blockedUntil: Date?
 
     private var pollTask: Task<Void, Never>?
 
     init() {
+        provider = UserDefaults.standard.string(forKey: "usageProvider").flatMap(UsageProvider.init(rawValue:)) ?? .claude
         let saved = UserDefaults.standard.double(forKey: "refreshInterval")
         refreshInterval = max(Self.minRefreshInterval, saved > 0 ? saved : 300)
         startPolling()
@@ -87,36 +112,55 @@ final class UsageModel: ObservableObject {
     }
 
     private func load(force: Bool = false) async {
-        if let blocked = blockedUntil, Date() < blocked { return }
-        if !force, let last = snapshot.fetchedAt, Date().timeIntervalSince(last) < 30 { return }
-        isLoading = true
-        defer { isLoading = false }
+        async let claude: Void = load(provider: .claude, force: force)
+        async let codex: Void = load(provider: .codex, force: force)
+        _ = await (claude, codex)
+    }
+
+    private func load(provider: UsageProvider, force: Bool) async {
+        let state = providers[provider]!
+        guard !state.isLoading else { return }
+        if let blocked = state.blockedUntil, Date() < blocked { return }
+        if !force, let last = state.snapshot.fetchedAt, Date().timeIntervalSince(last) < 30 { return }
+        providers[provider]!.isLoading = true
+        defer { providers[provider]!.isLoading = false }
         do {
-            var creds = try await Task.detached { try Self.readCredentials() }.value
-            guard !creds.isExpired else { throw TokenExpiredError() }
-            tier = creds.tier
-            if profile == nil {
-                profile = try? await Self.fetchProfile(token: creds.token)
+            switch provider {
+            case .claude:
+                try await loadClaude()
+            case .codex:
+                let usage = try await Task.detached { try CodexUsage.fetch() }.value
+                providers[.codex]!.snapshot = usage.snapshot
+                providers[.codex]!.profile = usage.profile
             }
-            var usage: UsageSnapshot
-            do {
-                usage = try await Self.fetchUsage(token: creds.token)
-            } catch is TokenExpiredError {
-                // Claude Code may have refreshed since we read — re-read and retry once
-                let fresh = try await Task.detached { try Self.readCredentials() }.value
-                guard fresh.token != creds.token, !fresh.isExpired else { throw TokenExpiredError() }
-                creds = fresh
-                usage = try await Self.fetchUsage(token: creds.token)
-            }
-            snapshot = usage
-            blockedUntil = nil
-            error = nil
+            providers[provider]!.blockedUntil = nil
+            providers[provider]!.error = nil
         } catch let rateLimited as RateLimitedError {
-            blockedUntil = Date().addingTimeInterval(rateLimited.retryAfter)
-            error = nil
+            providers[provider]!.blockedUntil = Date().addingTimeInterval(rateLimited.retryAfter)
+            providers[provider]!.error = nil
         } catch {
-            self.error = error.localizedDescription
+            providers[provider]!.error = error.localizedDescription
         }
+    }
+
+    private func loadClaude() async throws {
+        var creds = try await Task.detached { try Self.readCredentials() }.value
+        guard !creds.isExpired else { throw TokenExpiredError() }
+        providers[.claude]!.tier = creds.tier
+        if providers[.claude]!.profile == nil {
+            providers[.claude]!.profile = try? await Self.fetchProfile(token: creds.token)
+        }
+        var usage: UsageSnapshot
+        do {
+            usage = try await Self.fetchUsage(token: creds.token)
+        } catch is TokenExpiredError {
+            // Claude Code may have refreshed since we read — re-read and retry once
+            let fresh = try await Task.detached { try Self.readCredentials() }.value
+            guard fresh.token != creds.token, !fresh.isExpired else { throw TokenExpiredError() }
+            creds = fresh
+            usage = try await Self.fetchUsage(token: creds.token)
+        }
+        providers[.claude]!.snapshot = usage
     }
 
     // MARK: - Keychain

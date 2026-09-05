@@ -4,4 +4,4 @@ dist/
 .claude
 .claude/cert.p12
 AppIcon.iconset/
-ClaudeUsage.xcodeproj/
+*.xcodeproj/

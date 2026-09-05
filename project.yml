@@ -1,16 +1,16 @@
-name: ClaudeUsage
+name: TokenMenyu
 options:
   deploymentTarget:
     macOS: "14.0"
 targets:
-  ClaudeUsage:
+  TokenMenyu:
     type: application
     platform: macOS
     sources:
-      - Sources/ClaudeUsage
+      - Sources/TokenMenyu
       - AppIcon.icns
     settings:
-      PRODUCT_NAME: Claude Usage
+      PRODUCT_NAME: TokenMenyu
       PRODUCT_BUNDLE_IDENTIFIER: com.lodev09.claude-usage
       MARKETING_VERSION: 1.3.4
       INFOPLIST_FILE: Info.plist

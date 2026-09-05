@@ -4,9 +4,14 @@ struct UsageView: View {
     @ObservedObject var model: UsageModel
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var providerSelection
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            providerTabs
+
             header
 
             if let error = model.error, model.snapshot.limits.isEmpty {
@@ -23,7 +28,7 @@ struct UsageView: View {
                 if let extra = model.snapshot.extraUsage {
                     VStack(alignment: .leading, spacing: 5) {
                         HStack {
-                            Text("Extra usage")
+                            Text(model.snapshot.extraUsageTitle)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -36,6 +41,14 @@ struct UsageView: View {
                         }
                     }
                 }
+
+                if model.snapshot.limits.isEmpty, model.snapshot.extraUsage == nil {
+                    Text(model.isLoading ? "Loading usage…" : "No usage limits available.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                }
             }
 
             Divider()
@@ -46,12 +59,60 @@ struct UsageView: View {
         .onAppear { model.refresh() }
     }
 
+    private var providerTabs: some View {
+        let dark = colorScheme == .dark
+
+        return HStack(spacing: 0) {
+            ForEach(UsageProvider.allCases) { provider in
+                let selected = model.provider == provider
+                Button {
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                        model.provider = provider
+                    }
+                } label: {
+                    Text(provider.rawValue)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(selected ? Color.white.opacity(0.92) : Color.primary.opacity(0.7))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 32)
+                        .background {
+                            if selected {
+                                Capsule()
+                                    .fill(LinearGradient(
+                                        colors: dark
+                                            ? [Color(red: 0.25, green: 0.26, blue: 0.28), Color(red: 0.20, green: 0.21, blue: 0.23)]
+                                            : [Color(white: 0.24), Color(white: 0.17)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ))
+                                    .overlay {
+                                        Capsule().strokeBorder(.white.opacity(dark ? 0.12 : 0.08), lineWidth: 1)
+                                    }
+                                    .shadow(color: .black.opacity(0.18), radius: 3, y: 1)
+                                    .matchedGeometryEffect(id: "provider", in: providerSelection)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background((dark ? Color(white: 0.10) : Color(nsColor: .windowBackgroundColor)).opacity(0.25), in: Capsule())
+        .overlay {
+            Capsule().strokeBorder(.primary.opacity(dark ? 0.06 : 0.1), lineWidth: 1)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Provider")
+    }
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
-                Image(systemName: "sparkle")
-                    .foregroundStyle(.orange)
-                Text("Claude Usage")
+                Image(systemName: model.provider.symbol)
+                    .foregroundStyle(model.provider == .claude ? .orange : .primary)
+                Text("\(model.provider.rawValue) Usage")
                     .font(.headline)
                 Spacer()
                 if let tier = model.tierLabel {
@@ -134,11 +195,12 @@ struct UsageView: View {
                         .foregroundStyle(.orange)
                         .lineLimit(1)
                 }
-            } else if let error = model.error, model.snapshot.fetchedAt == nil {
+            } else if let error = model.error {
                 Text(error)
                     .font(.caption2)
                     .foregroundStyle(.orange)
                     .lineLimit(1)
+                    .help(error)
             } else if let fetched = model.snapshot.fetchedAt {
                 Text("Updated \(fetched.formatted(date: .omitted, time: .shortened))")
                     .font(.caption2)
@@ -158,7 +220,7 @@ struct UsageView: View {
                     openSettings()
                     NSApp.activate(ignoringOtherApps: true)
                 }
-                Button("About Claude Usage") {
+                Button("About TokenMenyu") {
                     openWindow(id: "about")
                     NSApp.activate(ignoringOtherApps: true)
                 }

@@ -13,7 +13,7 @@ struct AboutView: View {
                 .shadow(color: .black.opacity(0.25), radius: 10, y: 5)
 
             VStack(spacing: 6) {
-                Text("Claude Usage")
+                Text("TokenMenyu")
                     .font(.title2.weight(.semibold))
                 Text("Version \(version)")
                     .font(.caption.weight(.medium))
@@ -23,14 +23,14 @@ struct AboutView: View {
                     .background(.quaternary, in: Capsule())
             }
 
-            Text("Claude usage limits, live in your menu bar.")
+            Text("Claude and Codex usage limits, live in your menu bar.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 10) {
-                linkButton("GitHub", url: "https://github.com/lodev09/claude-usage")
+                linkButton("GitHub", url: "https://github.com/lodev09/tokenmenyu")
                 linkButton("@lodev09", url: "https://github.com/lodev09")
             }
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ClaudeUsageApp: App {
+struct TokenMenyuApp: App {
     @StateObject private var model = UsageModel()
 
     var body: some Scene {
@@ -9,14 +9,17 @@ struct ClaudeUsageApp: App {
             UsageView(model: model)
         } label: {
             HStack(spacing: 3) {
-                Image(systemName: "sparkle")
-                Text(model.headline)
-                    .monospacedDigit()
+                ForEach(UsageProvider.allCases) { provider in
+                    Image(systemName: provider.symbol)
+                    Text(model.headline(for: provider))
+                        .monospacedDigit()
+                        .help("\(provider.rawValue) usage")
+                }
             }
         }
         .menuBarExtraStyle(.window)
 
-        Window("About Claude Usage", id: "about") {
+        Window("About TokenMenyu", id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)
