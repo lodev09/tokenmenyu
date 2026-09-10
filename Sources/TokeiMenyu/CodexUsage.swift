@@ -10,7 +10,7 @@ struct CodexUsage {
         defer { server.close() }
 
         _ = try server.request("initialize", id: 0, params: [
-            "clientInfo": ["name": "tokenmenyu", "version": "1.0"]
+            "clientInfo": ["name": "tokeimenyu", "version": "1.0"]
         ])
         try server.send(["method": "initialized"])
         let accountData = try server.request("account/read", id: 1, params: ["refreshToken": false])

@@ -1,17 +1,17 @@
-name: TokenMenyu
+name: TokeiMenyu
 options:
   deploymentTarget:
     macOS: "14.0"
 targets:
-  TokenMenyu:
+  TokeiMenyu:
     type: application
     platform: macOS
     sources:
-      - Sources/TokenMenyu
+      - Sources/TokeiMenyu
       - AppIcon.icns
     settings:
-      PRODUCT_NAME: TokenMenyu
-      PRODUCT_BUNDLE_IDENTIFIER: com.lodev09.tokenmenyu
+      PRODUCT_NAME: TokeiMenyu
+      PRODUCT_BUNDLE_IDENTIFIER: com.lodev09.tokeimenyu
       MARKETING_VERSION: 1.4.1
       INFOPLIST_FILE: Info.plist
       CODE_SIGN_IDENTITY: "-"

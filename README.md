@@ -1,6 +1,8 @@
-# TokenMenyu
+# TokeiMenyu
 
 Track Claude and Codex usage limits from your macOS menu bar.
+
+From Japanese 時計 (*tokei*, "clock/watch") and メニュー (*menyū*, "menu") — a watch for your tokens, in the menu bar.
 
 - Menu bar shows current session usage for Claude and Codex
 - Provider switch with separate account details and usage limits
@@ -26,7 +28,7 @@ The app finds Codex CLI through `PATH`, `/opt/homebrew/bin`, `/usr/local/bin`, o
 
 ## Install
 
-Download the latest app from [GitHub Releases](https://github.com/lodev09/tokenmenyu/releases), or build from source:
+Download the latest app from [GitHub Releases](https://github.com/lodev09/tokeimenyu/releases), or build from source:
 
 ```sh
 make install   # builds and copies to /Applications

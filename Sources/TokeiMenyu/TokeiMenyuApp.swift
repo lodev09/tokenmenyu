@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct TokenMenyuApp: App {
+struct TokeiMenyuApp: App {
     @StateObject private var model = UsageModel()
 
     var body: some Scene {
@@ -17,7 +17,7 @@ struct TokenMenyuApp: App {
         }
         .menuBarExtraStyle(.window)
 
-        Window("About TokenMenyu", id: "about") {
+        Window("About TokeiMenyu", id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)

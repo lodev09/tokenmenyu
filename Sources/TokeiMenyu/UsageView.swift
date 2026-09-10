@@ -210,7 +210,7 @@ struct UsageView: View {
                     openSettings()
                     NSApp.activate(ignoringOtherApps: true)
                 }
-                Button("About TokenMenyu") {
+                Button("About TokeiMenyu") {
                     openWindow(id: "about")
                     NSApp.activate(ignoringOtherApps: true)
                 }

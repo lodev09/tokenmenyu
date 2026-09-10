@@ -13,7 +13,7 @@ struct AboutView: View {
                 .shadow(color: .black.opacity(0.25), radius: 10, y: 5)
 
             VStack(spacing: 6) {
-                Text("TokenMenyu")
+                Text("TokeiMenyu")
                     .font(.title2.weight(.semibold))
                 Text("Version \(version)")
                     .font(.caption.weight(.medium))
@@ -30,7 +30,7 @@ struct AboutView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 10) {
-                linkButton("GitHub", url: "https://github.com/lodev09/tokenmenyu")
+                linkButton("GitHub", url: "https://github.com/lodev09/tokeimenyu")
                 linkButton("@lodev09", url: "https://github.com/lodev09")
             }
 
